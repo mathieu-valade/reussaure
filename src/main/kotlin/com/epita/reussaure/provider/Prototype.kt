@@ -3,13 +3,26 @@ package com.epita.reussaure.provider
 import com.epita.reussaure.core.Provider
 import java.util.function.Supplier
 
-class Prototype<BEAN_TYPE>(val initializer: Supplier<BEAN_TYPE>) : Provider<BEAN_TYPE> {
+class Prototype<BEAN_TYPE>: Provider<BEAN_TYPE> {
 
-    override fun provide(): BEAN_TYPE {
+    private lateinit var providesClass: Class<BEAN_TYPE>
+
+    private lateinit var initializer: Supplier<BEAN_TYPE>
+
+    constructor(providesClass: Class<BEAN_TYPE>, initializer: Supplier<BEAN_TYPE>) {
+        this.providesClass = providesClass
+        this.initializer = initializer
+    }
+
+    override fun provide(): BEAN_TYPE? {
         return initializer.get()
     }
 
-    override fun provideForClass(): Class<BEAN_TYPE> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun providesForClass(): Class<BEAN_TYPE> {
+
+        return providesClass
+
     }
+
+
 }
