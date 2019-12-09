@@ -28,7 +28,8 @@ interface ScopeStack {
         return null
     }
 
-    fun <BEAN_TYPE> addProvider(provider: Provider<BEAN_TYPE>) {
-        getHead().addProvider(provider)
+    fun <EXPECTED_BEAN_TYPE, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> addProvider(expectedClass: Class<EXPECTED_BEAN_TYPE>,
+                                                                              provider: Provider<REAL_BEAN_TYPE>) {
+        getHead().addProvider(expectedClass, provider)
     }
 }

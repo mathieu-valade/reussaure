@@ -25,16 +25,17 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         return provider.provide()
     }
 
-    fun <EXPECTED_TYPE, REAL_TYPE : EXPECTED_TYPE> provider(expectedClass: Class<EXPECTED_TYPE>,
-                                                            provider: Provider<REAL_TYPE>) {
-
+    fun <EXPECTED_BEAN_TYPE : Any, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> provider(expectedClass: Class<EXPECTED_BEAN_TYPE>,
+                                                                                 provider: Provider<REAL_BEAN_TYPE>) {
+        scopeStack.addProvider(expectedClass, provider)
     }
 
-    fun <EXPECTED_TYPE, REAL_TYPE : EXPECTED_TYPE> bean(expectedClass: Class<EXPECTED_TYPE>,
-                                                        bean: REAL_TYPE) {
+    fun <EXPECTED_BEAN_TYPE : Any, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> bean(expectedClass: Class<EXPECTED_BEAN_TYPE>,
+                                                                             bean: REAL_BEAN_TYPE) {
         this.provider(expectedClass, Singleton(expectedClass, bean))
     }
 
-    fun <REAL_BEAN_TYPE> bean(bean: REAL_BEAN_TYPE) {
+    fun <REAL_BEAN_TYPE : Any> bean(bean: REAL_BEAN_TYPE) {
+        this.provider(bean.javaClass, Singleton(bean.javaClass, bean))
     }
 }
