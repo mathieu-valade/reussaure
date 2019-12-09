@@ -15,11 +15,11 @@ class Singleton<BEAN_TYPE>: Provider<BEAN_TYPE> {
         this.value = value
         this.provideClass = provideClass
     }
+    
     constructor(provideClass: Class<BEAN_TYPE>, initializer: Supplier<BEAN_TYPE>) {
         this.initializer = initializer
         this.provideClass = provideClass
     }
-
 
     override fun provide(): BEAN_TYPE {
         if (value == null) {

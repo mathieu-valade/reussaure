@@ -9,8 +9,11 @@ class Prototype<BEAN_TYPE>: Provider<BEAN_TYPE> {
 
     private lateinit var initializer: Supplier<BEAN_TYPE>
 
-    constructor(initializer: Supplier<BEAN_TYPE>) {
+    private lateinit var provideClass: Class<BEAN_TYPE>
+
+    constructor(provideClass: Class<BEAN_TYPE>, initializer: Supplier<BEAN_TYPE>) {
         this.initializer = initializer
+        this.provideClass = provideClass
     }
 
     override fun provide(): BEAN_TYPE {
@@ -18,7 +21,7 @@ class Prototype<BEAN_TYPE>: Provider<BEAN_TYPE> {
     }
 
     override fun provideForClass(): Class<BEAN_TYPE> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return provideClass
     }
 
 
