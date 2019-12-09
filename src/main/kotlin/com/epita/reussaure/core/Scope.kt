@@ -10,7 +10,7 @@ class Scope {
 
     fun <BEAN_TYPE> getProvider(providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE>? {
         for (providerPair in providers) {
-            if (providerPair.first.javaClass == providerClass) {
+            if (providerPair.first == providerClass) {
                 return providerPair.second as Provider<BEAN_TYPE>
             }
         }

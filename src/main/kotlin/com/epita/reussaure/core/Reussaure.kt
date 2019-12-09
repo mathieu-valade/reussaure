@@ -6,9 +6,6 @@ import java.util.*
 
 
 class Reussaure(init: Reussaure.() -> Unit = {}) {
-    init {
-        init.invoke(this)
-    }
 
     private val providerDeque: Deque<Scope> = ArrayDeque()
     private val scopeStack: ScopeStack = object : ScopeStack {
@@ -16,6 +13,10 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
             providerDeque.add(Scope())
             return providerDeque
         }
+    }
+
+    init {
+        init.invoke(this)
     }
 
     fun <BEAN_TYPE> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
