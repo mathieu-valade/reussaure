@@ -56,7 +56,7 @@ class BasicReussaureTest {
                 }
 
                 // Define AoP behaviour around calls to the pong method.
-                provider(Nested::class.java, Singleton(Nested(instanceOf(TestService::class.java))))
+                provider(Nested::class.java, Singleton(Nested::class.java, Nested(instanceOf(TestService::class.java))))
                 provider(Nested::class.java, Prototype(Supplier { Nested(instanceOf(TestService::class.java)) }))
             }
         }
