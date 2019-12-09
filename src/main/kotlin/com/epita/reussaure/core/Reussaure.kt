@@ -1,31 +1,35 @@
 package com.epita.reussaure.core
 
-import kotlin.collections.ArrayList
+import com.epita.reussaure.provider.Singleton
+import java.util.*
+
 
 class Reussaure(init: Reussaure.() -> Unit = {}) {
     init {
         init.invoke(this)
     }
 
-    private val providerList: List<Provider<Any?>> = ArrayList()
-
+    private val providerList: Deque<Scope> = ArrayDeque()
+    private val scopeStack: ScopeStack = object : ScopeStack {
+        override fun getScopeStack(): Deque<Scope> {
+            return providerList
+        }
+    }
 
     fun <BEAN_TYPE> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
-        return providerList
-                .filter { provider -> provider.provideForClass().isAssignableFrom(expectedClass) }
-                .map { provider -> provider as Provider<BEAN_TYPE>}
-                .first()
-                .provide()
+        TODO()
     }
 
-    fun <BEAN_TYPE> provider(expectedClass: Class<BEAN_TYPE>, provider: Provider<BEAN_TYPE>) {
-    }
-
-    fun <BEAN_TYPE> bean(expectedClass: Class<BEAN_TYPE>, bean: BEAN_TYPE) {
+    fun <EXPECTED_TYPE, REAL_TYPE : EXPECTED_TYPE> provider(expectedClass: Class<EXPECTED_TYPE>,
+                                                            provider: Provider<REAL_TYPE>) {
 
     }
 
-    fun <BEAN_TYPE> bean(bean: BEAN_TYPE) {
+    fun <EXPECTED_TYPE, REAL_TYPE : EXPECTED_TYPE> bean(expectedClass: Class<EXPECTED_TYPE>,
+                                                        bean: REAL_TYPE) {
+        this.provider(expectedClass, Singleton(expectedClass, bean))
+    }
 
+    fun <REAL_BEAN_TYPE> bean(bean: REAL_BEAN_TYPE) {
     }
 }
