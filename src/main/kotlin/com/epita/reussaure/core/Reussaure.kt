@@ -1,6 +1,7 @@
 package com.epita.reussaure.core
 
 import com.epita.reussaure.provider.Singleton
+import com.epita.reussaure.utils.exception.ProviderNotFoundException
 import java.util.*
 
 
@@ -9,15 +10,19 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         init.invoke(this)
     }
 
-    private val providerList: Deque<Scope> = ArrayDeque()
+    private val providerDeque: Deque<Scope> = ArrayDeque()
     private val scopeStack: ScopeStack = object : ScopeStack {
         override fun getScopeStack(): Deque<Scope> {
-            return providerList
+            providerDeque.add(Scope())
+            return providerDeque
         }
     }
 
     fun <BEAN_TYPE> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
-        TODO()
+        val provider = scopeStack.getProvider(expectedClass)
+                ?: throw ProviderNotFoundException(expectedClass.toString())
+
+        return provider.provide()
     }
 
     fun <EXPECTED_TYPE, REAL_TYPE : EXPECTED_TYPE> provider(expectedClass: Class<EXPECTED_TYPE>,
