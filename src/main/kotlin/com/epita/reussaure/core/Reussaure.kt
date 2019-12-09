@@ -19,6 +19,10 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         init.invoke(this)
     }
 
+    fun scope(init: Scope.() -> Unit = {}) {
+        scopeStack.pushScope(Scope().apply(init))
+    }
+
     fun <BEAN_TYPE> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
         val provider = scopeStack.getProvider(expectedClass)
                 ?: throw ProviderNotFoundException(expectedClass.toString())
