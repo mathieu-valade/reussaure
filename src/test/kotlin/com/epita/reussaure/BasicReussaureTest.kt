@@ -1,12 +1,13 @@
 package com.epita.reussaure
 
+import com.epita.reussaure.core.Reussaure
 import com.epita.reussaure.provider.Prototype
 import com.epita.reussaure.provider.Singleton
 import com.epita.reussaure.test.Nested
 import com.epita.reussaure.test.TestService
 import com.epita.reussaure.test.TestServiceBlipImpl
 import com.epita.reussaure.test.TestServiceImpl
-import com.epita.reussaure.util.*
+//import com.epita.reussaure.util.*
 import org.junit.Test
 import java.util.function.Supplier
 import kotlin.reflect.jvm.javaMethod
