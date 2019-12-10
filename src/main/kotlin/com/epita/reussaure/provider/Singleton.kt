@@ -1,9 +1,12 @@
 package com.epita.reussaure.provider
 
+import com.epita.reussaure.core.BeanInterceptor
 import com.epita.reussaure.core.Provider
+import java.lang.reflect.Proxy
 import java.util.function.Supplier
 
-class Singleton<BEAN_TYPE>: Provider<BEAN_TYPE> {
+class Singleton<BEAN_TYPE: Any>: Provider<BEAN_TYPE> {
+    override val interceptor: BeanInterceptor = BeanInterceptor()
 
     private var value : BEAN_TYPE? = null
 
@@ -12,7 +15,7 @@ class Singleton<BEAN_TYPE>: Provider<BEAN_TYPE> {
     private lateinit var provideClass: Class<BEAN_TYPE>
 
     constructor(provideClass: Class<BEAN_TYPE>, value: BEAN_TYPE) {
-        this.value = value
+        this.value = proxify(value)
         this.provideClass = provideClass
     }
     
@@ -23,7 +26,7 @@ class Singleton<BEAN_TYPE>: Provider<BEAN_TYPE> {
 
     override fun provide(): BEAN_TYPE {
         if (value == null) {
-            value = initializer.get()
+            value = proxify(initializer.get())
         }
         return value!!
     }
@@ -31,4 +34,5 @@ class Singleton<BEAN_TYPE>: Provider<BEAN_TYPE> {
     override fun provideForClass(): Class<BEAN_TYPE> {
         return provideClass
     }
+
 }

@@ -1,11 +1,13 @@
 package com.epita.reussaure.provider
 
+import com.epita.reussaure.core.BeanInterceptor
 import com.epita.reussaure.core.Provider
-import java.beans.beancontext.BeanContext
+import java.lang.reflect.Proxy
 import java.util.function.Supplier
 
-class Prototype<BEAN_TYPE>: Provider<BEAN_TYPE> {
 
+class Prototype<BEAN_TYPE: Any>: Provider<BEAN_TYPE> {
+    override val interceptor: BeanInterceptor = BeanInterceptor()
 
     private lateinit var initializer: Supplier<BEAN_TYPE>
 
@@ -17,12 +19,15 @@ class Prototype<BEAN_TYPE>: Provider<BEAN_TYPE> {
     }
 
     override fun provide(): BEAN_TYPE {
-        return initializer.get()
+        val value = initializer.get()
+        return Proxy.newProxyInstance(
+                value.javaClass.classLoader,
+                value.javaClass.interfaces,
+                interceptor
+        ) as BEAN_TYPE
     }
 
     override fun provideForClass(): Class<BEAN_TYPE> {
         return provideClass
     }
-
-
 }

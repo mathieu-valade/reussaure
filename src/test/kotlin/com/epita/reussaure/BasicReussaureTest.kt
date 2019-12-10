@@ -20,13 +20,13 @@ class BasicReussaureTest {
         val reussaure = Reussaure {
 
             // Add a provider to the scope, of type prototype, that binds on Nested.class.
-            provider(Nested::class.java, Prototype(Nested::class.java, Supplier { Nested(instanceOf(TestService::class.java)) }))
+//            provider(Nested::class.java, Prototype(Nested::class.java, Supplier { Nested(instanceOf(TestService::class.java)) }))
 
             // Shortcut for singleton addition.
-            bean(TestService::class.java, TestServiceImpl())
+//            bean(TestService::class.java, TestServiceImpl())
 
             // Shortcurt for singleton, binding on the element class.
-            bean(Nested(instanceOf(TestService::class.java)))
+//            bean(Nested(instanceOf(TestService::class.java)))
 
             // Stacks a scope.
             scope {
@@ -38,19 +38,19 @@ class BasicReussaureTest {
                     before(TestService::pong.javaMethod) { println("before >> ") }
 
                     // Define AoP behaviour around calls to the pong method.
-                    around(TestService::pong.javaMethod) { ctx ->
-                        val before = System.nanoTime()
-                        val res: Any? = ctx.proceed()
-                        println("Method ${ctx.method.name} executed in ${(System.nanoTime() - before) / 1000000.0}ms")
-                        res
-                    }
+//                    around(TestService::pong.javaMethod) { ctx ->
+//                        val before = System.nanoTime()
+//                        val res: Any? = ctx.proceed()
+//                        println("Method ${ctx.method.name} executed in ${(System.nanoTime() - before) / 1000000.0}ms")
+//                        res
+//                    }
 
                     // Define AoP behaviour around calls to the pong method. Wraps previous aspects.
-                    around(TestService::pong.javaMethod) { ctx ->
-                        val res: Any? = ctx.proceed()
-                        println("result is: $res")
-                        res
-                    }
+//                    around(TestService::pong.javaMethod) { ctx ->
+//                        val res: Any? = ctx.proceed()
+//                        println("result is: $res")
+//                        res
+//                    }
 
                     // Adds behaviour after the calls to pong.
                     after(TestService::pong.javaMethod) { println("<< after !") }
