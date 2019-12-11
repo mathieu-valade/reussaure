@@ -29,6 +29,11 @@ interface ScopeStack {
     }
 
     @Mutate
+    fun pushScope() {
+        pushScope(Scope())
+    }
+
+    @Mutate
     fun popScope(): Scope {
         if (getScopeStack().size <= MIN_STACK_SIZE) {
             throw InvalidScopePopException()

@@ -20,10 +20,7 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         init.invoke(this)
     }
 
-//    fun scope(init: Scope.() -> Unit = {}) {
-//        scopeStack.pushScope(Scope().apply(init))
-//    }
-
+    @NotNull
     fun <BEAN_TYPE : Any> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
         val provider = scopeStack.getProvider(expectedClass)
 
@@ -37,20 +34,10 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
     }
 
     @Mutate
-    fun <BEAN_TYPE : Any> provider(@NotNull provider: Provider<BEAN_TYPE>, block: Provider<BEAN_TYPE>.() -> Unit) {
-        Fault.NULL.validate(provider)
+    fun <BEAN_TYPE : Any> provider(@NotNull provider: Provider<BEAN_TYPE>, @NotNull block: Provider<BEAN_TYPE>.() -> Unit) {
+        Fault.NULL.validate(Pair(provider, "provider"), Pair(block, "block"))
         block.invoke(provider)
         scopeStack.addProvider(provider)
     }
 
-//    fun <EXPECTED_BEAN_TYPE : Any, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> bean(
-//            expectedClass: Class<EXPECTED_BEAN_TYPE>,
-//            bean: REAL_BEAN_TYPE,
-//            block: Provider<REAL_BEAN_TYPE>.() -> Unit
-//    ) {
-//
-//        val provider = Singleton(bean.javaClass, bean)
-//        block.invoke(provider)
-//        this.provider(expectedClass, provider)
-//    }
 }

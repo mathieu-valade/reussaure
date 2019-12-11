@@ -1,5 +1,8 @@
 package com.epita.reussaure.core
 
+import com.epita.reussaure.annotation.NotNull
+
 interface Aspect<BEAN_TYPE : Any> {
-    fun proxify(provider: Provider<BEAN_TYPE>, bean: BEAN_TYPE): BEAN_TYPE
+    @NotNull
+    fun proxify(@NotNull provider: Provider<BEAN_TYPE>, @NotNull bean: BEAN_TYPE): BEAN_TYPE
 }

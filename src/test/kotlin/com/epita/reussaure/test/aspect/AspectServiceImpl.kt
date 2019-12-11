@@ -6,4 +6,7 @@ class AspectServiceImpl(
     override fun addValue(value: String) {
         valueList.add(value)
     }
+
+    override fun anotherMethod() {
+    }
 }

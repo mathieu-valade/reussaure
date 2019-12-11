@@ -1,18 +1,23 @@
 package com.epita.reussaure
 
 import com.epita.reussaure.core.Reussaure
+import com.epita.reussaure.exception.BeanNotFoundException
 import com.epita.reussaure.provider.Prototype
 import com.epita.reussaure.provider.Singleton
+import com.epita.reussaure.test.Nested
 import com.epita.reussaure.test.TestService
 import com.epita.reussaure.test.TestServiceBlipImpl
 import com.epita.reussaure.test.TestServiceImpl
 import com.epita.reussaure.test.aspect.AspectService
 import com.epita.reussaure.test.aspect.AspectServiceImpl
 import org.junit.Test
+import java.lang.reflect.Method
 import java.util.function.Supplier
 import kotlin.reflect.jvm.javaMethod
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 class BasicReussaureTest {
 
@@ -43,7 +48,7 @@ class BasicReussaureTest {
         val reussaure = Reussaure {
             provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
-                before(TestService::pong.javaMethod) { _, _, _ ->
+                before(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("before")
                 }
             }
@@ -56,12 +61,28 @@ class BasicReussaureTest {
     }
 
     @Test
+    fun TestBeforeAspectIncorrectMethod() {
+        val valueList = ArrayList<String>()
+        val reussaure = Reussaure {
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            ) {
+                before(AspectService::addValue.javaMethod) { _, _, _ ->
+                    valueList.add("before")
+                }
+            }
+        }
+        reussaure.instanceOf(AspectService::class.java).anotherMethod()
+
+        assertEquals(valueList.count(), 0)
+    }
+
+    @Test
     fun TestAfterAspect() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
             provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
-                after(TestService::pong.javaMethod) { _, _, _ ->
+                after(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("after")
                 }
             }
@@ -71,6 +92,61 @@ class BasicReussaureTest {
         assertEquals(valueList.count(), 2)
         assertEquals(valueList[0], "method")
         assertEquals(valueList[1], "after")
+    }
+
+    @Test
+    fun TestAfterAspectIncorrectMethod() {
+        val valueList = ArrayList<String>()
+        val reussaure = Reussaure {
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            ) {
+                after(AspectService::addValue.javaMethod) { _, _, _ ->
+                    valueList.add("after")
+                }
+            }
+        }
+        reussaure.instanceOf(AspectService::class.java).anotherMethod()
+
+        assertEquals(valueList.count(), 0)
+    }
+
+    @Test
+    fun TestAroundAspect() {
+        val valueList = ArrayList<String>()
+        val reussaure = Reussaure {
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            ) {
+                around(AspectService::addValue.javaMethod) { execute: () -> Unit, _: AspectService, _: Method, _: Array<Any> ->
+                    valueList.add("before")
+                    execute()
+                    valueList.add("after")
+                }
+            }
+        }
+        reussaure.instanceOf(AspectService::class.java).addValue("method")
+
+        assertEquals(valueList.count(), 3)
+        assertEquals(valueList[0], "before")
+        assertEquals(valueList[1], "method")
+        assertEquals(valueList[2], "after")
+    }
+
+    @Test
+    fun TestAroundAspectIncorrectMethod() {
+        val valueList = ArrayList<String>()
+        val reussaure = Reussaure {
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            ) {
+                around(AspectService::addValue.javaMethod) { execute: () -> Unit, _: AspectService, _: Method, _: Array<Any> ->
+                    valueList.add("before")
+                    execute()
+                    valueList.add("after")
+                }
+            }
+        }
+        reussaure.instanceOf(AspectService::class.java).anotherMethod()
+
+        assertEquals(valueList.count(), 0)
     }
 
     @Test
@@ -95,5 +171,36 @@ class BasicReussaureTest {
         val instance2 = reussaure.instanceOf(TestService::class.java)
 
         assertNotEquals(instance1, instance2)
+    }
+
+    @Test
+    fun TestFailBeanNotFound() {
+
+        val ressaure = Reussaure {}
+        assertFailsWith<BeanNotFoundException> {
+            ressaure.instanceOf(TestService::class.java)
+        }
+    }
+
+    @Test
+    fun TestNestedBean() {
+        val reussaure = Reussaure {
+            provider(Prototype(Nested::class.java, Supplier { Nested(instanceOf(TestService::class.java)) }))
+            provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
+        }
+
+        val testService = reussaure.instanceOf(Nested::class.java).service
+
+        assertNotNull(testService)
+        assertEquals(testService.pong(), "pong")
+    }
+
+    @Test
+    fun TestSingletonScope() {
+        val reussaure = Reussaure {
+            provider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
+
+        }
+
     }
 }

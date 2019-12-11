@@ -17,17 +17,26 @@ enum class Fault(
         return InvalidValueException(this)
     }
 
-    fun <OBJECT_TYPE> validate(value: OBJECT_TYPE): OBJECT_TYPE {
+    fun <OBJECT_TYPE> softCheck(value: OBJECT_TYPE): Boolean {
+        return predicate(value)
+    }
+
+
+    fun <OBJECT_TYPE> validate(value: OBJECT_TYPE) {
         if (predicate(value)) {
             throw forValue()
         }
-        return value
     }
 
-    fun <OBJECT_TYPE> validate(value: OBJECT_TYPE, field: String): OBJECT_TYPE {
+    fun <OBJECT_TYPE> validate(value: OBJECT_TYPE, field: String) {
         if (predicate(value)) {
             throw forField(field)
         }
-        return value
+    }
+
+    fun <OBJECT_TYPE> validate(vararg valueFields: Pair<OBJECT_TYPE, String>) {
+        valueFields.forEach {
+            validate(it.first, it.second)
+        }
     }
 }
