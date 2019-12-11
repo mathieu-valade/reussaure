@@ -15,7 +15,7 @@ class Singleton<BEAN_TYPE: Any>: Provider<BEAN_TYPE> {
 
     constructor(provideClass: Class<BEAN_TYPE>, value: BEAN_TYPE) {
         this.provideClass = provideClass
-        this.value = proxify(this, value)
+        this.initializer = Supplier { value }
     }
     
     constructor(provideClass: Class<BEAN_TYPE>, initializer: Supplier<BEAN_TYPE>) {
