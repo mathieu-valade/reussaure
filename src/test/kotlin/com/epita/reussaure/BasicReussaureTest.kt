@@ -2,6 +2,7 @@ package com.epita.reussaure
 
 import com.epita.reussaure.core.Reussaure
 import com.epita.reussaure.exception.BeanNotFoundException
+import com.epita.reussaure.exception.ProxyTypeNotAnInterfaceException
 import com.epita.reussaure.provider.Prototype
 import com.epita.reussaure.provider.Singleton
 import com.epita.reussaure.test.Nested
@@ -24,8 +25,8 @@ class BasicReussaureTest {
     @Test
     fun TestSimpleRessaure() {
         val reussaure = Reussaure {
-            provider(Prototype(TestServiceBlipImpl::class.java, Supplier { TestServiceBlipImpl() }))
-            provider(Prototype(TestServiceImpl::class.java, Supplier { TestServiceImpl() }))
+            addProvider(Prototype(TestServiceBlipImpl::class.java, Supplier { TestServiceBlipImpl() }))
+            addProvider(Prototype(TestServiceImpl::class.java, Supplier { TestServiceImpl() }))
         }
 
         assertEquals(reussaure.instanceOf(TestServiceBlipImpl::class.java).pong(), "blip")
@@ -35,7 +36,7 @@ class BasicReussaureTest {
     @Test
     fun TestInstanceOfInterface() {
         val reussaure = Reussaure {
-            provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
+            addProvider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
         }
 
         assert(reussaure.instanceOf(TestService::class.java) is TestServiceImpl)
@@ -46,7 +47,7 @@ class BasicReussaureTest {
 
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 before(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("before")
@@ -64,7 +65,7 @@ class BasicReussaureTest {
     fun TestBeforeAspectIncorrectMethod() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 before(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("before")
@@ -80,7 +81,7 @@ class BasicReussaureTest {
     fun TestAfterAspect() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 after(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("after")
@@ -98,7 +99,7 @@ class BasicReussaureTest {
     fun TestAfterAspectIncorrectMethod() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 after(AspectService::addValue.javaMethod) { _, _, _ ->
                     valueList.add("after")
@@ -114,7 +115,7 @@ class BasicReussaureTest {
     fun TestAroundAspect() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 around(AspectService::addValue.javaMethod) { execute: () -> Unit, _: AspectService, _: Method, _: Array<Any> ->
                     valueList.add("before")
@@ -135,7 +136,7 @@ class BasicReussaureTest {
     fun TestAroundAspectIncorrectMethod() {
         val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
+            addProvider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 around(AspectService::addValue.javaMethod) { execute: () -> Unit, _: AspectService, _: Method, _: Array<Any> ->
                     valueList.add("before")
@@ -152,7 +153,7 @@ class BasicReussaureTest {
     @Test
     fun TestSingletonProvider() {
         val reussaure = Reussaure {
-            provider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
+            addProvider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
         }
 
         val instance1 = reussaure.instanceOf(TestService::class.java)
@@ -164,7 +165,7 @@ class BasicReussaureTest {
     @Test
     fun TestPrototypeProvider() {
         val reussaure = Reussaure {
-            provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
+            addProvider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
         }
 
         val instance1 = reussaure.instanceOf(TestService::class.java)
@@ -185,8 +186,8 @@ class BasicReussaureTest {
     @Test
     fun TestNestedBean() {
         val reussaure = Reussaure {
-            provider(Prototype(Nested::class.java, Supplier { Nested(instanceOf(TestService::class.java)) }))
-            provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
+            addProvider(Prototype(Nested::class.java, Supplier { Nested(instanceOf(TestService::class.java)) }))
+            addProvider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
         }
 
         val testService = reussaure.instanceOf(Nested::class.java).service
@@ -198,9 +199,33 @@ class BasicReussaureTest {
     @Test
     fun TestSingletonScope() {
         val reussaure = Reussaure {
-            provider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
-
+            addProvider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
         }
+        val s1 = reussaure.instanceOf(TestService::class.java)
 
+        reussaure.pushScope {
+            addProvider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
+        }
+        val s2 = reussaure.instanceOf(TestService::class.java)
+
+        reussaure.popScope()
+        val s3 = reussaure.instanceOf(TestService::class.java)
+
+        assertNotEquals(s1, s2)
+        assertEquals(s1, s3)
+    }
+
+    @Test
+    fun TestProxyTypeNotAnInterface() {
+        assertFailsWith<ProxyTypeNotAnInterfaceException> {
+            val reussaure = Reussaure {
+                addProvider(Singleton(TestServiceImpl::class.java, Supplier { TestServiceImpl() })) {
+                    before(TestServiceImpl::ping.javaMethod) { _, _, _ ->
+                        println("before")
+                    }
+                }
+            }
+            reussaure.instanceOf(TestServiceImpl::class.java)
+        }
     }
 }

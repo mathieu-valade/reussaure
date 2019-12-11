@@ -1,4 +1,4 @@
-package com.epita.reussaure.core
+package com.epita.reussaure.aspect
 
 import java.lang.reflect.Method
 

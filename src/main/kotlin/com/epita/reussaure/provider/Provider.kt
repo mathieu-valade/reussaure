@@ -1,11 +1,11 @@
-package com.epita.reussaure.core
+package com.epita.reussaure.provider
 
 import com.epita.reussaure.annotation.Mutate
 import com.epita.reussaure.annotation.NotNull
 import com.epita.reussaure.annotation.Nullable
-import com.epita.reussaure.core.aspects.AfterAspect
-import com.epita.reussaure.core.aspects.AroundAspect
-import com.epita.reussaure.core.aspects.BeforeAspect
+import com.epita.reussaure.annotation.Pure
+import com.epita.reussaure.aspect.*
+import com.epita.reussaure.exception.ProxyTypeNotAnInterfaceException
 import com.epita.reussaure.validator.Condition
 import com.epita.reussaure.validator.Fault
 import java.lang.reflect.Method
@@ -37,22 +37,26 @@ interface Provider<BEAN_TYPE : Any> {
         }
     }
 
-    fun provideOptional(): BEAN_TYPE? {
-        return provide()
-    }
-
+    @NotNull
+    @Pure
     fun provide(): BEAN_TYPE
 
+    @NotNull
+    @Pure
     fun provideForClass(): Class<BEAN_TYPE>
 
-    fun proxify(provider: Provider<BEAN_TYPE>, bean: BEAN_TYPE): BEAN_TYPE {
+    @NotNull
+    @Mutate
+    fun proxify(@NotNull provider: Provider<BEAN_TYPE>, @NotNull bean: BEAN_TYPE): BEAN_TYPE {
         Fault.NULL.validate(Pair(provider, "provider"), Pair(bean, "bean"))
 
         if (aspectList.isEmpty()) {
             return bean
         }
-        if (!provideForClass().isInterface) {
-            throw RuntimeException("Not an interface")
+
+        val provideForClass = provideForClass()
+        if (!provideForClass.isInterface) {
+            throw ProxyTypeNotAnInterfaceException("provideForClass")
         }
 
         var proxied = bean

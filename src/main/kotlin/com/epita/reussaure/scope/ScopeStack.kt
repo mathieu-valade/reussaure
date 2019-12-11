@@ -1,4 +1,4 @@
-package com.epita.reussaure.core
+package com.epita.reussaure.scope
 
 import com.epita.reussaure.annotation.Mutate
 import com.epita.reussaure.annotation.NotNull
@@ -18,41 +18,34 @@ interface ScopeStack {
     fun getScopeStack(): Deque<Scope>
 
     @Pure
+    @NotNull
     fun getHead(): Scope {
         return getScopeStack().peek()
     }
 
     @Mutate
     fun pushScope(@NotNull scope: Scope) {
-        Fault.NULL.validate(scope, "scope")
+        pushScope(scope) {}
+    }
+
+    @Mutate
+    fun pushScope(@NotNull init: Scope.() -> Unit) {
+        pushScope(DefaultScope(), init)
+    }
+
+    @Mutate
+    fun pushScope(@NotNull scope: Scope, @NotNull init: Scope.() -> Unit) {
+        Fault.NULL.validate(Pair(scope, "scope"), Pair(init, "init"))
+        init(scope)
         getScopeStack().push(scope)
     }
 
     @Mutate
-    fun pushScope() {
-        pushScope(Scope())
-    }
-
-    @Mutate
+    @NotNull
     fun popScope(): Scope {
         if (getScopeStack().size <= MIN_STACK_SIZE) {
             throw InvalidScopePopException()
         }
         return getScopeStack().pop()
-    }
-
-    @NotNull
-    @Pure
-    fun <BEAN_TYPE : Any> getProvider(@NotNull providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE> {
-        Fault.NULL.validate(providerClass, "providerClass")
-        return getScopeStack()
-                .mapNotNull { scope -> scope.getProvider(providerClass) }
-                .first()
-    }
-
-    @Mutate
-    fun <BEAN_TYPE : Any> addProvider(@NotNull provider: Provider<BEAN_TYPE>) {
-        Fault.NULL.validate(provider, "provider")
-        getHead().addProvider(provider)
     }
 }

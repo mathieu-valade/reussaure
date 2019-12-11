@@ -2,8 +2,7 @@ package com.epita.reussaure.provider
 
 import com.epita.reussaure.annotation.NotNull
 import com.epita.reussaure.annotation.Pure
-import com.epita.reussaure.core.Aspect
-import com.epita.reussaure.core.Provider
+import com.epita.reussaure.aspect.Aspect
 import java.util.function.Supplier
 
 abstract class AbstractProvider<BEAN_TYPE : Any, SUPPLIER_BEAN_TYPE : BEAN_TYPE>(
