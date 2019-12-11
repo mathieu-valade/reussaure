@@ -11,9 +11,10 @@ class AfterAspect<BEAN_TYPE : Any>(val aspect: AspectConsumer<BEAN_TYPE>) : Aspe
         return Proxy.newProxyInstance(
                 bean.javaClass.classLoader,
                 arrayOf(provider.provideForClass())
-        ) { obj: Any, method: Method, args: Array<Any>? ->
-            method.invoke(bean, *(args ?: arrayOf()))
+        ) { _: Any, method: Method, args: Array<Any>? ->
+            val res = method.invoke(bean, *(args ?: arrayOf()))
             aspect(bean, method, args ?: arrayOf())
+            res
         } as BEAN_TYPE
     }
 }
