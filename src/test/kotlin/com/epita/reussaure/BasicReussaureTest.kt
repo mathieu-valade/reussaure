@@ -1,14 +1,13 @@
 package com.epita.reussaure
 
+//import com.epita.reussaure.util.*
 import com.epita.reussaure.core.Reussaure
 import com.epita.reussaure.provider.Prototype
 import com.epita.reussaure.provider.Singleton
 import com.epita.reussaure.test.Nested
 import com.epita.reussaure.test.TestService
 import com.epita.reussaure.test.TestServiceBlipImpl
-import com.epita.reussaure.test.TestServiceImpl
 import com.epita.reussaure.utils.timesDo
-//import com.epita.reussaure.util.*
 import org.junit.Test
 import java.util.function.Supplier
 import kotlin.reflect.jvm.javaMethod
@@ -35,25 +34,25 @@ class BasicReussaureTest {
                 bean(TestService::class.java, TestServiceBlipImpl()) {
 
                     // Define AoP behaviour on the before(Pong)
-                    before(TestService::pong.javaMethod) { println("before >> ") }
+                    before(TestService::pong.javaMethod) { _, _, _ -> println("before >> ") }
 
                     // Define AoP behaviour around calls to the pong method.
-//                    around(TestService::pong.javaMethod) { ctx ->
-//                        val before = System.nanoTime()
-//                        val res: Any? = ctx.proceed()
-//                        println("Method ${ctx.method.name} executed in ${(System.nanoTime() - before) / 1000000.0}ms")
-//                        res
-//                    }
+                    around(TestService::pong.javaMethod) { ctx, _, method, _ ->
+                        val before = System.nanoTime()
+                        val res: Any? = ctx()
+                        println("Method ${method.name} executed in ${(System.nanoTime() - before) / 1000000.0}ms")
+                        res
+                    }
 
-                    // Define AoP behaviour around calls to the pong method. Wraps previous aspects.
-//                    around(TestService::pong.javaMethod) { ctx ->
-//                        val res: Any? = ctx.proceed()
-//                        println("result is: $res")
-//                        res
-//                    }
+//                     Define AoP behaviour around calls to the pong method. Wraps previous aspects.
+                    around(TestService::pong.javaMethod) { ctx, _, _, _ ->
+                        val res: Any? = ctx()
+                        println("result is: $res")
+                        res
+                    }
 
                     // Adds behaviour after the calls to pong.
-                    after(TestService::pong.javaMethod) { println("<< after !") }
+                    after(TestService::pong.javaMethod) { _, _, _ -> println("<< after !") }
                 }
 
                 // Define AoP behaviour around calls to the pong method.

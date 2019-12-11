@@ -1,8 +1,8 @@
 package com.epita.reussaure.core
 
 import com.epita.reussaure.provider.Singleton
-import java.util.*
 import java.nio.file.ProviderNotFoundException
+import java.util.*
 
 
 class Reussaure(init: Reussaure.() -> Unit = {}) {
@@ -23,7 +23,7 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         scopeStack.pushScope(Scope().apply(init))
     }
 
-    fun <BEAN_TYPE> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
+    fun <BEAN_TYPE : Any> instanceOf(expectedClass: Class<BEAN_TYPE>): BEAN_TYPE {
         val provider = scopeStack.getProvider(expectedClass)
                 ?: throw ProviderNotFoundException(expectedClass.toString())
 
@@ -49,7 +49,6 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
             bean: REAL_BEAN_TYPE,
             block: Provider<REAL_BEAN_TYPE>.() -> Unit
     ) {
-
         val provider = Singleton(bean.javaClass, bean)
         block.invoke(provider)
         this.provider(expectedClass, provider)

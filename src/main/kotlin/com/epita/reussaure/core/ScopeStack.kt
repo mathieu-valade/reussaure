@@ -18,7 +18,7 @@ interface ScopeStack {
         return getScopeStack().pop()
     }
 
-    fun <BEAN_TYPE> getProvider(providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE>? {
+    fun <BEAN_TYPE : Any> getProvider(providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE>? {
         for (scope in getScopeStack().reversed()) {
             val provider = scope.getProvider(providerClass)
             if (provider != null) {
@@ -28,8 +28,8 @@ interface ScopeStack {
         return null
     }
 
-    fun <EXPECTED_BEAN_TYPE, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> addProvider(expectedClass: Class<EXPECTED_BEAN_TYPE>,
-                                                                              provider: Provider<REAL_BEAN_TYPE>) {
+    fun <EXPECTED_BEAN_TYPE : Any, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> addProvider(expectedClass: Class<EXPECTED_BEAN_TYPE>,
+                                                                                    provider: Provider<REAL_BEAN_TYPE>) {
         getHead().addProvider(expectedClass, provider)
     }
 }
