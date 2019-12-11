@@ -1,37 +1,20 @@
 package com.epita.reussaure.provider
 
-import com.epita.reussaure.core.Aspect
-import com.epita.reussaure.core.Provider
 import java.util.function.Supplier
 
-class Singleton<BEAN_TYPE: Any>: Provider<BEAN_TYPE> {
-    override val aspectList: ArrayList<Aspect<BEAN_TYPE>> = arrayListOf()
+class Singleton<BEAN_TYPE : Any, SUPPLIER_BEAN_TYPE : BEAN_TYPE>(provideClass: Class<BEAN_TYPE>,
+                                                                 initializer: Supplier<SUPPLIER_BEAN_TYPE>)
+    : AbstractProvider<BEAN_TYPE, SUPPLIER_BEAN_TYPE>(provideClass, initializer) {
 
-    private var value : BEAN_TYPE? = null
-
-    private lateinit var initializer: Supplier<BEAN_TYPE>
-
-    private var provideClass: Class<BEAN_TYPE>
-
-    constructor(provideClass: Class<BEAN_TYPE>, value: BEAN_TYPE) {
-        this.provideClass = provideClass
-        this.initializer = Supplier { value }
-    }
-    
-    constructor(provideClass: Class<BEAN_TYPE>, initializer: Supplier<BEAN_TYPE>) {
-        this.provideClass = provideClass
-        this.initializer = initializer
-    }
+    private var value: BEAN_TYPE? = null
+    private var isInitialized = false
 
     override fun provide(): BEAN_TYPE {
-        if (value == null) {
+        if (!isInitialized) {
             value = proxify(this, initializer.get())
+            isInitialized = true
         }
         return value!!
-    }
-
-    override fun provideForClass(): Class<BEAN_TYPE> {
-        return provideClass
     }
 
 }

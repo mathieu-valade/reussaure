@@ -2,13 +2,17 @@ package com.epita.reussaure
 
 import com.epita.reussaure.core.Reussaure
 import com.epita.reussaure.provider.Prototype
+import com.epita.reussaure.provider.Singleton
 import com.epita.reussaure.test.TestService
 import com.epita.reussaure.test.TestServiceBlipImpl
 import com.epita.reussaure.test.TestServiceImpl
-import org.junit.Assert
+import com.epita.reussaure.test.aspect.AspectService
+import com.epita.reussaure.test.aspect.AspectServiceImpl
 import org.junit.Test
 import java.util.function.Supplier
 import kotlin.reflect.jvm.javaMethod
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class BasicReussaureTest {
 
@@ -19,8 +23,8 @@ class BasicReussaureTest {
             provider(Prototype(TestServiceImpl::class.java, Supplier { TestServiceImpl() }))
         }
 
-        Assert.assertEquals(reussaure.instanceOf(TestServiceBlipImpl::class.java).pong(), "blip")
-        Assert.assertEquals(reussaure.instanceOf(TestServiceImpl::class.java).pong(), "pong")
+        assertEquals(reussaure.instanceOf(TestServiceBlipImpl::class.java).pong(), "blip")
+        assertEquals(reussaure.instanceOf(TestServiceImpl::class.java).pong(), "pong")
     }
 
     @Test
@@ -29,39 +33,67 @@ class BasicReussaureTest {
             provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
         }
 
-        Assert.assertTrue(reussaure.instanceOf(TestService::class.java) is TestServiceImpl)
+        assert(reussaure.instanceOf(TestService::class.java) is TestServiceImpl)
     }
 
     @Test
     fun TestBeforeAspect() {
-        var beforeHasBeenCalled = false
+
+        val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(TestService::class.java, Supplier { TestServiceBlipImpl() })
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 before(TestService::pong.javaMethod) { _, _, _ ->
-                    println("BEFORE")
-                    beforeHasBeenCalled = true
+                    valueList.add("before")
                 }
             }
         }
-        reussaure.instanceOf(TestService::class.java).pong()
-        Assert.assertTrue(beforeHasBeenCalled)
+        reussaure.instanceOf(AspectService::class.java).addValue("method")
+
+        assertEquals(valueList.count(), 2)
+        assertEquals(valueList[0], "before")
+        assertEquals(valueList[1], "method")
     }
 
     @Test
     fun TestAfterAspect() {
-        var beforeHasBeenCalled = false
+        val valueList = ArrayList<String>()
         val reussaure = Reussaure {
-            provider(Prototype(TestService::class.java, Supplier { TestServiceBlipImpl() })
+            provider(Prototype(AspectService::class.java, Supplier { AspectServiceImpl(valueList) })
             ) {
                 after(TestService::pong.javaMethod) { _, _, _ ->
-                    println("BEFORE")
-                    beforeHasBeenCalled = true
+                    valueList.add("after")
                 }
             }
         }
-        reussaure.instanceOf(TestService::class.java).pong()
-        Assert.assertTrue(beforeHasBeenCalled)
+        reussaure.instanceOf(AspectService::class.java).addValue("method")
+
+        assertEquals(valueList.count(), 2)
+        assertEquals(valueList[0], "method")
+        assertEquals(valueList[1], "after")
     }
 
+    @Test
+    fun TestSingletonProvider() {
+        val reussaure = Reussaure {
+            provider(Singleton(TestService::class.java, Supplier { TestServiceImpl() }))
+        }
+
+        val instance1 = reussaure.instanceOf(TestService::class.java)
+        val instance2 = reussaure.instanceOf(TestService::class.java)
+
+        assertEquals(instance1, instance2)
+    }
+
+    @Test
+    fun TestPrototypeProvider() {
+        val reussaure = Reussaure {
+            provider(Prototype(TestService::class.java, Supplier { TestServiceImpl() }))
+        }
+
+        val instance1 = reussaure.instanceOf(TestService::class.java)
+        val instance2 = reussaure.instanceOf(TestService::class.java)
+
+        assertNotEquals(instance1, instance2)
+    }
 }
