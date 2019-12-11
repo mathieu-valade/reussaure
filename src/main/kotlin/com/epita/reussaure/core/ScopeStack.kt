@@ -38,16 +38,16 @@ interface ScopeStack {
 
     @NotNull
     @Pure
-    fun <BEAN_TYPE> getProvider(@NotNull providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE>? {
+    fun <BEAN_TYPE : Any> getProvider(@NotNull providerClass: Class<BEAN_TYPE>): Provider<BEAN_TYPE> {
         Fault.NULL.validate(providerClass, "providerClass")
         return getScopeStack()
                 .mapNotNull { scope -> scope.getProvider(providerClass) }
                 .first()
     }
 
-
-    fun <EXPECTED_BEAN_TYPE, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> addProvider(expectedClass: Class<EXPECTED_BEAN_TYPE>,
-                                                                              provider: Provider<REAL_BEAN_TYPE>) {
-        getHead().addProvider(expectedClass, provider)
+    @Mutate
+    fun <BEAN_TYPE : Any> addProvider(@NotNull provider: Provider<BEAN_TYPE>) {
+        Fault.NULL.validate(provider, "provider")
+        getHead().addProvider(provider)
     }
 }
