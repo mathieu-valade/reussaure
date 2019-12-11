@@ -36,6 +36,13 @@ class Reussaure(init: Reussaure.() -> Unit = {}) {
         scopeStack.addProvider(provider)
     }
 
+    @Mutate
+    fun <BEAN_TYPE : Any> provider(@NotNull provider: Provider<BEAN_TYPE>, block: Provider<BEAN_TYPE>.() -> Unit) {
+        Fault.NULL.validate(provider)
+        block.invoke(provider)
+        scopeStack.addProvider(provider)
+    }
+
 //    fun <EXPECTED_BEAN_TYPE : Any, REAL_BEAN_TYPE : EXPECTED_BEAN_TYPE> bean(
 //            expectedClass: Class<EXPECTED_BEAN_TYPE>,
 //            bean: REAL_BEAN_TYPE,
